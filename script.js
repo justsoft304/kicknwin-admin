@@ -3,18 +3,18 @@ const tableBody = document.getElementById("tableBody");
 
 let predictions = [];
 
-/* --- GITHUB CONFIG --- */
-const REPO_OWNER = "justsoft304"; // replace with your GitHub username
+const REPO_OWNER = "justsoft304"; // e.g. justsoft304
 const REPO_NAME = "kicknwin-admin";
-const TODAY_JSON = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/today_predictions.json`;
-const PAST_JSON = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/past_predictions.json`;
+const TODAY_FILE = "today_predictions.json";
+const PAST_FILE = "past_predictions.json";
 
-/* --- LOAD DATA FROM GITHUB --- */
+const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/`;
+
 async function loadPredictions() {
   try {
     const [todayRes, pastRes] = await Promise.all([
-      fetch(TODAY_JSON),
-      fetch(PAST_JSON),
+      fetch(`${RAW_BASE}${TODAY_FILE}`),
+      fetch(`${RAW_BASE}${PAST_FILE}`),
     ]);
 
     const todayData = await todayRes.json();
@@ -24,15 +24,14 @@ async function loadPredictions() {
     localStorage.setItem("predictions", JSON.stringify(predictions));
 
     renderTable();
-    console.log("✅ Predictions loaded from GitHub");
+    console.log("✅ Loaded predictions from GitHub");
   } catch (err) {
-    console.error("❌ Error loading data:", err);
+    console.error("❌ Failed to load GitHub data:", err);
     predictions = JSON.parse(localStorage.getItem("predictions")) || [];
     renderTable();
   }
 }
 
-/* --- RENDER TABLE --- */
 function renderTable() {
   tableBody.innerHTML = "";
   predictions.forEach((pred, i) => {
@@ -61,7 +60,6 @@ function renderTable() {
   });
 }
 
-/* --- SAVE NEW PREDICTION --- */
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -81,36 +79,31 @@ form.addEventListener("submit", async (e) => {
   renderTable();
   form.reset();
 
-  alert("✅ Prediction saved locally! Generating JSONs for sync...");
-  await saveLocalJSON();
+  alert("💾 Prediction saved locally! Generating updated JSONs...");
+  await updateLocalJSONs();
 });
 
-/* --- SAVE JSON FILES LOCALLY (for GitHub Action sync) --- */
-async function saveLocalJSON() {
+async function updateLocalJSONs() {
   const todayData = predictions.filter((p) => p.target === "today");
   const pastData = predictions.filter((p) => p.target === "past");
 
   await saveFile("today_predictions.json", todayData);
   await saveFile("past_predictions.json", pastData);
+
+  alert("✅ JSONs updated locally! GitHub Action will sync automatically.");
 }
 
 async function saveFile(filename, data) {
-  try {
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    alert(`💾 ${filename} updated locally. Commit & push to sync.`);
-  } catch (err) {
-    console.error("Save error:", err);
-  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
-/* --- EDIT & DELETE --- */
 function editPrediction(index) {
   const p = predictions[index];
   matchDate.value = p.date;
@@ -128,8 +121,7 @@ function deletePrediction(index) {
   predictions.splice(index, 1);
   localStorage.setItem("predictions", JSON.stringify(predictions));
   renderTable();
+  updateLocalJSONs();
 }
 
-/* --- INIT --- */
 loadPredictions();
-

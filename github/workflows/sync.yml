@@ -1,13 +1,14 @@
-name: Secure Auto Sync KickNWin
+name: Auto Sync KickNWin Predictions
 
 on:
+  repository_dispatch:
+    types: [update_predictions]
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  autosync:
+  sync:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -21,10 +22,10 @@ jobs:
           git config user.name "KickNWin Bot"
           git config user.email "bot@kicknwin.com"
 
-      - name: Commit and Push JSON Updates
+      - name: Commit & Push updated predictions
         env:
           KICK_TOKEN: ${{ secrets.KICK_TOKEN }}
         run: |
           git add today_predictions.json past_predictions.json
-          git commit -m "Auto-sync predictions via Dashboard" || echo "No changes to commit"
+          git commit -m "Auto-sync predictions from Dashboard" || echo "No changes"
           git push https://x-access-token:${{ secrets.KICK_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

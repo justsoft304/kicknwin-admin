@@ -2,10 +2,23 @@ body {
   font-family: 'Poppins', sans-serif;
   background-color: #f5f6fa;
 }
-.navbar-brand { font-weight: 600; }
-.card { border-radius: 12px; }
-.table td, .table th { vertical-align: middle; }
-.btn { font-weight: 500; }
+
+.navbar-brand {
+  font-weight: 600;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.btn {
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .card form .col-md-4,
   .card form .col-md-6,

@@ -1,0 +1,20 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f5f6fa;
+}
+
+.navbar-brand {
+  font-weight: 600;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+table th, table td {
+  vertical-align: middle;
+}
+
+.btn {
+  font-weight: 500;
+}

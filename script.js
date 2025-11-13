@@ -4,7 +4,7 @@ const tableBody = document.getElementById("tableBody");
 let predictions = [];
 
 /* --- GITHUB CONFIG --- */
-const REPO_OWNER = "your-username"; // replace with your GitHub username
+const REPO_OWNER = "justsoft304"; // replace with your GitHub username
 const REPO_NAME = "kicknwin-admin";
 const TODAY_JSON = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/today_predictions.json`;
 const PAST_JSON = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/past_predictions.json`;
@@ -132,3 +132,4 @@ function deletePrediction(index) {
 
 /* --- INIT --- */
 loadPredictions();
+

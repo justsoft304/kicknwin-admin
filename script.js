@@ -3,10 +3,9 @@ const tableBody = document.getElementById("tableBody");
 
 let predictions = JSON.parse(localStorage.getItem("predictions")) || [];
 
-// Display predictions
 function renderTable() {
   tableBody.innerHTML = "";
-  predictions.forEach((pred, index) => {
+  predictions.forEach((pred, i) => {
     tableBody.innerHTML += `
       <tr>
         <td>${pred.date}</td>
@@ -14,51 +13,74 @@ function renderTable() {
         <td>${pred.home}</td>
         <td>${pred.away}</td>
         <td>${pred.prediction}</td>
-        <td>${pred.confidence || '-'}</td>
+        <td>${pred.confidence || "-"}</td>
         <td class="${pred.status === 'win' ? 'text-success' : pred.status === 'loss' ? 'text-danger' : 'text-warning'}">${pred.status}</td>
         <td>${pred.target}</td>
         <td>
-          <button class="btn btn-sm btn-primary" onclick="editPrediction(${index})">Edit</button>
-          <button class="btn btn-sm btn-danger" onclick="deletePrediction(${index})">Delete</button>
+          <button class="btn btn-sm btn-primary me-1" onclick="editPrediction(${i})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deletePrediction(${i})">Delete</button>
         </td>
       </tr>
     `;
   });
 }
 
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const newPrediction = {
-    date: document.getElementById("matchDate").value,
-    league: document.getElementById("league").value,
-    home: document.getElementById("home").value,
-    away: document.getElementById("away").value,
-    prediction: document.getElementById("prediction").value,
-    confidence: document.getElementById("confidence").value,
-    status: document.getElementById("status").value,
-    target: document.getElementById("target").value
+    date: matchDate.value,
+    league: league.value,
+    home: home.value,
+    away: away.value,
+    prediction: prediction.value,
+    confidence: confidence.value,
+    status: status.value,
+    target: target.value,
   };
 
   predictions.push(newPrediction);
   localStorage.setItem("predictions", JSON.stringify(predictions));
-
-  form.reset();
   renderTable();
+  form.reset();
 
-  alert("✅ Prediction saved locally! (GitHub sync to be added)");
+  alert("✅ Prediction saved locally! Triggering GitHub sync...");
+  await saveLocalJSON();
 });
+
+/* Save JSONs locally in repo; GitHub Action will push them */
+async function saveLocalJSON() {
+  const todayData = predictions.filter(p => p.target === "today");
+  const pastData = predictions.filter(p => p.target === "past");
+
+  await saveFile("today_predictions.json", todayData);
+  await saveFile("past_predictions.json", pastData);
+}
+
+async function saveFile(filename, data) {
+  try {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    alert(`💾 ${filename} saved locally. Commit & push to GitHub to sync.`);
+  } catch (err) {
+    console.error("Save error:", err);
+  }
+}
 
 function editPrediction(index) {
   const p = predictions[index];
-  document.getElementById("matchDate").value = p.date;
-  document.getElementById("league").value = p.league;
-  document.getElementById("home").value = p.home;
-  document.getElementById("away").value = p.away;
-  document.getElementById("prediction").value = p.prediction;
-  document.getElementById("confidence").value = p.confidence;
-  document.getElementById("status").value = p.status;
-  document.getElementById("target").value = p.target;
+  matchDate.value = p.date;
+  league.value = p.league;
+  home.value = p.home;
+  away.value = p.away;
+  prediction.value = p.prediction;
+  confidence.value = p.confidence;
+  status.value = p.status;
+  target.value = p.target;
 
   deletePrediction(index);
 }
